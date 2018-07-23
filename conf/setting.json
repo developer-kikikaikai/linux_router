@@ -1,0 +1,19 @@
+{
+    "bridgeif": {
+        "name": "br0",
+        "ipv4": "192.168.100.1",
+	"netmask": "255.255.255.0",
+        "dhcpv4start": "192.168.100.2",
+        "dhcpv4end": "192.168.100.254"
+    },
+    "../lib/libeth_landevice.so": {
+        "type": "ethernet",
+        "name": "eth0"
+    },
+    "../lib/libwifi_landevice.so": {
+        "type": "wifi",
+        "name": "wlan0",
+        "ssid": "XXX",
+        "pass": "XXX"
+    }
+}
