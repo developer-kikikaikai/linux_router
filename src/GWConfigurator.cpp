@@ -10,45 +10,45 @@
 #include <spawn.h>
 #include <sys/wait.h>
 
-int GWConfigurator::setIP(const char *ip, const char * netmask) {
+int GWConfigurator::set_ip(const char *ip, const char * netmask) {
 	std::cout << "GWConfiguration, set IP " << ip << ",netmask " << netmask << " to " << _bridgeif << std::endl;
 	std::cout << "Get OS default GW information" << std::endl;
-	_getGWIP();
+	_get_gw_ip();
 
 	std::cout << "GW, IF=" << _gwif << ", ip=" << _gwip << std::endl;
 
 	/*setup bridge LAN interface*/
-	_addBridge(ip, netmask);
+	_add_bridge(ip, netmask);
 	return 0;
 }
 
-int GWConfigurator::unsetIP() {
+int GWConfigurator::unset_ip() {
 	std::cout << "GWConfiguration, unset IP" << std::endl;
-	_delBridge();
+	_del_bridge();
 	return 0;
 }
 
-void GWConfigurator::addDevice(const char *name) {
+void GWConfigurator::add_device(const char *name) {
 	const char *args[] = {"brctl", "addif", _bridgeif, name, NULL};
-	_callCmd(args);
+	_call_cmd(args);
 	
 }
 
-void GWConfigurator::delDevice(const char *name) {
+void GWConfigurator::del_device(const char *name) {
 	const char *args[] = {"brctl", "delif", _bridgeif, name, NULL};
-	_callCmd(args);
+	_call_cmd(args);
 }
 
 /****private *****/
-void GWConfigurator::_addBridge(const char *ip, const char * netmask) {
+void GWConfigurator::_add_bridge(const char *ip, const char * netmask) {
 	/*set bridge*/
 	const char *args[] = {"brctl", "addbr", _bridgeif, NULL};
-	_callCmd(args);
+	_call_cmd(args);
 
 	/*up and set ip*/
 	int fd;
 	struct ifreq ifr;
-	fd = socket(AF_INET, SOCK_DGRAM, 0);
+	fd = _get_ifsock();
 	if(fd<0) return;
 
 	/* access _gwif */
@@ -60,24 +60,21 @@ void GWConfigurator::_addBridge(const char *ip, const char * netmask) {
 	ifr.ifr_flags |= (IFF_UP | IFF_RUNNING | IFF_DYNAMIC);
 	ioctl(fd, SIOCSIFFLAGS, &ifr);
 
-	/* set ip */
-	ifr.ifr_addr.sa_family = AF_INET;
-	struct sockaddr_in * s_in = (struct sockaddr_in *)&ifr.ifr_addr;
-	s_in->sin_addr.s_addr = inet_addr(ip);
-	ioctl(fd, SIOCSIFADDR, &ifr);
+	/* set ip address */
+	_ifr_ip(&ifr);
+	_ifr_setaddr(ip, fd, &ifr, SIOCSIFADDR);
 
 	/*set netmask*/
-	s_in->sin_addr.s_addr = inet_addr(netmask);
-	ioctl(fd, SIOCSIFNETMASK, &ifr);
+	_ifr_setaddr(ip, fd, &ifr, SIOCSIFNETMASK);
 
 	close(fd);
 }
 
-void GWConfigurator::_delBridge() {
+void GWConfigurator::_del_bridge() {
 	/*down device*/
 	int fd;
 	struct ifreq ifr;
-	fd = socket(AF_INET, SOCK_DGRAM, 0);
+	fd = _get_ifsock();
 	if(fd<0) return;
 
 	/* access _gwif */
@@ -85,17 +82,16 @@ void GWConfigurator::_delBridge() {
 
 	/*get status*/
 	ioctl(fd, SIOCGIFFLAGS, &ifr);
-
 	/* add up and running */
 	ifr.ifr_flags = ~(IFF_UP | IFF_RUNNING);
 	ioctl(fd, SIOCSIFFLAGS, &ifr);
 
 	const char *args[] = {"brctl", "delbr", _bridgeif, NULL};
-	_callCmd(args);
+	_call_cmd(args);
 }
 
-/** for setIP ***/
-void GWConfigurator::_getGWIF(){
+/** for set_ip ***/
+void GWConfigurator::_get_gw_if(){
 
 	memset(_gwif, 0, sizeof(_gwif));
 
@@ -113,26 +109,25 @@ void GWConfigurator::_getGWIF(){
 	pclose(fp);
 }
 
-int GWConfigurator::_isGWIF() {
+int GWConfigurator::_is_gw_if() {
 	return (_gwif[0] == 0);
 }
 
-void GWConfigurator::_getGWIP() {
+void GWConfigurator::_get_gw_ip() {
 
 	memset(_gwip, 0, sizeof(_gwip));
 	/*get gw name*/
-	_getGWIF();
-	if(_isGWIF()) return;
+	_get_gw_if();
+	if(_is_gw_if()) return;
 
 	int fd;
 	/*struct to get interface information*/
 	struct ifreq ifr;
 
-	fd = socket(AF_INET, SOCK_DGRAM, 0);
+	fd = _get_ifsock();
 	if(fd < 0) return;
 
-	/* IP addr */
-	ifr.ifr_addr.sa_family = AF_INET;
+	_ifr_ip(&ifr);
 
 	/* access _gwif */
 	strncpy(ifr.ifr_name, _gwif, IFNAMSIZ-1);
@@ -143,7 +138,7 @@ void GWConfigurator::_getGWIP() {
 	snprintf(_gwip, sizeof(_gwip), "%s", inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr));
 }
 
-void GWConfigurator::_callCmd(const char ** in_cmd) {
+void GWConfigurator::_call_cmd(const char ** in_cmd) {
 	std::string cmd;
 
 	int i=0;
@@ -154,4 +149,19 @@ void GWConfigurator::_callCmd(const char ** in_cmd) {
 
 	FILE *fp = popen(cmd.c_str(), "r");
 	pclose(fp);
+}
+
+void GWConfigurator::_ifr_ip(struct ifreq * ifr) {
+	/* IP addr */
+	ifr->ifr_addr.sa_family = AF_INET;
+}
+
+int GWConfigurator::_ifr_setaddr(const char * ip, int fd, struct ifreq * ifr, int addrflag) {
+	struct sockaddr_in * s_in = (struct sockaddr_in *)&ifr->ifr_addr;
+	s_in->sin_addr.s_addr = inet_addr(ip);
+	return ioctl(fd, addrflag, ifr);
+}
+
+int GWConfigurator::_get_ifsock() {
+	return socket(AF_INET, SOCK_DGRAM, 0);
 }

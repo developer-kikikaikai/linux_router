@@ -9,7 +9,7 @@ LANIPManager::LANIPManager(const json_t * lan_info) {
 int LANIPManager::_set_gw(void) {
 	const char * netmask = JsonParser::get_string(_lan_info, "netmask");
 	const char * ipv4 = JsonParser::get_string(_lan_info, "ipv4");
-	_gw->setIP(ipv4, netmask);
+	_gw->set_ip(ipv4, netmask);
 	return 0;
 }
 
@@ -32,18 +32,18 @@ int LANIPManager::set(void) {
 }
 
 int LANIPManager::add_if(const char * name) {
-	_gw->addDevice(name);
+	_gw->add_device(name);
 	return 0;
 }
 
 int LANIPManager::del_if(const char * name) {
-	_gw->delDevice(name);
+	_gw->del_device(name);
 	return 0;
 }
 
 int LANIPManager::unset(void) {
 	std::cout << "LANIPManager::start, setting" << std::endl;
 	if(_dhcp != NULL) _dhcp->stop();
-	if(_gw != NULL) _gw->unsetIP();
+	if(_gw != NULL) _gw->unset_ip();
 	return 0;
 }

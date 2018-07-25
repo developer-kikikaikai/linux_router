@@ -13,16 +13,19 @@ private:
 	char _gwip[16 + 1];
 
 	/*for up bridge*/
-	void _addBridge(const char *ip, const char * netmask);
-	void _delBridge();
+	void _add_bridge(const char *ip, const char * netmask);
+	void _del_bridge();
 
-	/*for setIP*/
-	void _getGWIF();
-	int _isGWIF();
-	void _getGWIP();
+	/*for set_ip*/
+	void _get_gw_if();
+	int _is_gw_if();
+	void _get_gw_ip();
 
 	/*common*/
-	void _callCmd(const char ** cmd);
+	void _call_cmd(const char ** cmd);
+	void _ifr_ip(struct ifreq * ifr);
+	int _ifr_setaddr(const char * ip, int fd, struct ifreq * ifr, int addrflag);
+	int _get_ifsock();
 public:
 	GWConfigurator(const char *bridgeif) {
 		if(bridgeif==NULL) {
@@ -32,9 +35,9 @@ public:
 		_bridgeif = bridgeif;
 	}
 
-	int setIP(const char * ip, const char * netmask);
-	int unsetIP();
-	void addDevice(const char *name);
-	void delDevice(const char *name);
+	int set_ip(const char * ip, const char * netmask);
+	int unset_ip();
+	void add_device(const char *name);
+	void del_device(const char *name);
 };
 #endif
