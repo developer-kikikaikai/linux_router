@@ -24,6 +24,8 @@ public:
 
 	int set(void);
 	int unset(void);
+	int add_if(const char *);
+	int del_if(const char *);
 };
 
 #endif

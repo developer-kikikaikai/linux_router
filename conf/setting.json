@@ -1,10 +1,10 @@
 {
     "bridgeif": {
         "name": "br0",
-        "ipv4": "192.168.100.1",
+        "ipv4": "192.168.1.1",
 	"netmask": "255.255.255.0",
-        "dhcpv4start": "192.168.100.2",
-        "dhcpv4end": "192.168.100.254"
+        "dhcpv4start": "192.168.1.2",
+        "dhcpv4end": "192.168.1.254"
     },
     "../lib/libeth_landevice.so": {
         "type": "ethernet",

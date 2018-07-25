@@ -31,6 +31,16 @@ int LANIPManager::set(void) {
 	return 0;
 }
 
+int LANIPManager::add_if(const char * name) {
+	_gw->addDevice(name);
+	return 0;
+}
+
+int LANIPManager::del_if(const char * name) {
+	_gw->delDevice(name);
+	return 0;
+}
+
 int LANIPManager::unset(void) {
 	std::cout << "LANIPManager::start, setting" << std::endl;
 	if(_dhcp != NULL) _dhcp->stop();
