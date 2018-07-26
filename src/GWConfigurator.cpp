@@ -158,7 +158,7 @@ void GWConfigurator::_ifr_ip(struct ifreq * ifr) {
 
 int GWConfigurator::_ifr_setaddr(const char * ip, int fd, struct ifreq * ifr, int addrflag) {
 	struct sockaddr_in * s_in = (struct sockaddr_in *)&ifr->ifr_addr;
-	s_in->sin_addr.s_addr = inet_addr(ip);
+	inet_pton(AF_INET, ip, &s_in->sin_addr.s_addr);
 	return ioctl(fd, addrflag, ifr);
 }
 
