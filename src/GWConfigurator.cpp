@@ -32,7 +32,6 @@ int GWConfigurator::unset_ip() {
 }
 
 void GWConfigurator::add_device(const char *name) {
-	_clear_ifip(name);
 	const char *args[] = {"brctl", "addif", _bridgeif, name, NULL};
 	_call_cmd(args);
 	
@@ -150,18 +149,6 @@ void GWConfigurator::_get_gw_ip() {
 	close(fd);
 
 	snprintf(_gwip, sizeof(_gwip), "%s", inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr));
-}
-
-void GWConfigurator::_clear_ifip(const char * name) {
-	int fd;
-	struct ifreq ifr;
-	fd = _get_ifsock();
-	if(fd<0) return;
-
-	/*set ip address 0*/
-	_ifr_ip(&ifr);
-	_ifr_setaddr("0.0.0.0", fd, &ifr, SIOCSIFADDR);
-	close(fd);
 }
 
 void GWConfigurator::_call_cmd(const char ** in_cmd) {
