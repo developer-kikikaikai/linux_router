@@ -22,6 +22,7 @@ void LANManager::add_devices(void) {
 	char * plugin_name;
 	const char * key;
 	const json_t * value;
+	device_init.lanif = _ipmanager->getlanif();
 	for(auto itr = _setting_parser->plugin_map.begin(); itr != _setting_parser->plugin_map.end(); ++itr) {
 		std::cout << itr->first << std::endl;
 		json_object_foreach(itr->second, key, value)  {

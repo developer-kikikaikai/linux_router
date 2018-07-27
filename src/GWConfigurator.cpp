@@ -98,6 +98,7 @@ void GWConfigurator::_del_bridge() {
 	/* add up and running */
 	ifr.ifr_flags = ~(IFF_UP | IFF_RUNNING);
 	ioctl(fd, SIOCSIFFLAGS, &ifr);
+	close(fd);
 
 	const char *args[] = {"brctl", "delbr", _bridgeif, NULL};
 	_call_cmd(args);

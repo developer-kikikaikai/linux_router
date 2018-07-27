@@ -23,6 +23,7 @@ public:
 	}
 
 	int set(void);
+	const char * getlanif(void);
 	int unset(void);
 	int add_if(const char *);
 	int del_if(const char *);

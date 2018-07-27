@@ -2,7 +2,7 @@
 
 LANIPManager::LANIPManager(const json_t * lan_info) {
 	_lan_info = lan_info;
-	const char * lanif = JsonParser::get_string(_lan_info, "name");
+	const char * lanif = getlanif();
 	_dhcp = new DHCPConfigurator(lanif);
 	_gw = new GWConfigurator(lanif);
 }
@@ -33,6 +33,10 @@ int LANIPManager::set(void) {
 	_set_dhcp();
 
 	return 0;
+}
+
+const char * LANIPManager::getlanif(void) {
+	return JsonParser::get_string(_lan_info, "name");
 }
 
 int LANIPManager::add_if(const char * name) {

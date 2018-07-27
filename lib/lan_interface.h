@@ -17,6 +17,7 @@ struct lan_device_interface_t {
 struct lan_device_init_param_t;
 typedef struct lan_device_init_param_t lan_device_init_param_t, *LANDeviceInitParam;
 struct lan_device_init_param_t {
+	const char * lanif;
 	const json_t * conf_handle;
 	LANDeviceInterface class_instance;
 };
