@@ -27,6 +27,18 @@ static void eth_fail_safe_type_ethernet(const json_t * inparam);
 static void eth_lan_clean(LANDeviceInterface this) {
 	EthLANDevice eth = (EthLANDevice)this;
 	printf("Ether:clean, if=%s\n", eth->_ifname);
+	
+	/* access if, down to reset IP and up */
+	struct ifreq ifr;
+	int fd = socket(AF_INET, SOCK_DGRAM, 0);
+	if(fd<0) return;
+	
+	/*get status*/
+	ioctl(fd, SIOCGIFFLAGS, &ifr);
+	/*down*/
+	ifr.ifr_flags = ~(IFF_UP | IFF_RUNNING);
+	ioctl(fd, SIOCSIFFLAGS, &ifr);
+	close(fd);
 }
 
 static const char * eth_lan_getname(LANDeviceInterface this) {
@@ -73,6 +85,7 @@ int lan_if_up(void * initial_parameter) {
 	/* access if, down to reset IP and up */
 	strncpy(ifr.ifr_name, instance->_ifname, IFNAMSIZ-1);
 	/*get status*/
+	ioctl(fd, SIOCGIFFLAGS, &ifr);
 
 	/*set release IP flag*/
 	ifr.ifr_flags |= IFF_DYNAMIC;
@@ -86,5 +99,6 @@ int lan_if_up(void * initial_parameter) {
 	ifr.ifr_flags |= (IFF_UP | IFF_RUNNING);
 	ioctl(fd, SIOCSIFFLAGS, &ifr);
 
+	close(fd);
 	return LL_BUILDER_SUCCESS;
 }
