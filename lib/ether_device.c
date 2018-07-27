@@ -5,6 +5,13 @@
 #include "device_json_parser.h"
 #include <lower_layer_builder.h>
 #include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <net/if.h>
 
 struct eth_lan_device_t {
 LAN_DEVICE_INTERFACE
@@ -58,5 +65,26 @@ int lan_if_up(void * initial_parameter) {
 
 	instance->_ifname = json_get_string(param->conf_handle, "name");
 	printf("Ether:up, if=%s\n", instance->_ifname);
+
+	struct ifreq ifr;
+	int fd = socket(AF_INET, SOCK_DGRAM, 0);
+	if(fd<0) return LL_BUILDER_FAILED;
+
+	/* access if, down to reset IP and up */
+	strncpy(ifr.ifr_name, instance->_ifname, IFNAMSIZ-1);
+	/*get status*/
+
+	/*set release IP flag*/
+	ifr.ifr_flags |= IFF_DYNAMIC;
+	ioctl(fd, SIOCGIFFLAGS, &ifr);
+
+	/*down*/
+	ifr.ifr_flags = ~(IFF_UP | IFF_RUNNING);
+	ioctl(fd, SIOCSIFFLAGS, &ifr);
+
+	/*up*/
+	ifr.ifr_flags |= (IFF_UP | IFF_RUNNING);
+	ioctl(fd, SIOCSIFFLAGS, &ifr);
+
 	return LL_BUILDER_SUCCESS;
 }
