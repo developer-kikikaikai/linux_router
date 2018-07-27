@@ -2,8 +2,9 @@
 
 LANIPManager::LANIPManager(const json_t * lan_info) {
 	_lan_info = lan_info;
-	_dhcp = new DHCPConfigurator();
-	_gw = new GWConfigurator(JsonParser::get_string(_lan_info, "name"));
+	const char * lanif = JsonParser::get_string(_lan_info, "name");
+	_dhcp = new DHCPConfigurator(lanif);
+	_gw = new GWConfigurator(lanif);
 }
 
 int LANIPManager::_set_gw(void) {
@@ -16,7 +17,10 @@ int LANIPManager::_set_gw(void) {
 int LANIPManager::_set_dhcp(void) {
 	const char * start = JsonParser::get_string(_lan_info, "dhcpv4start");
 	const char * end = JsonParser::get_string(_lan_info, "dhcpv4end");
-	_dhcp->start(start, end);
+	const char * netmask = JsonParser::get_string(_lan_info, "netmask");
+	const char * ipv4 = JsonParser::get_string(_lan_info, "ipv4");
+	const char * leasetime = JsonParser::get_string(_lan_info, "lease-time");
+	_dhcp->start(start, end, ipv4, netmask, leasetime);
 	return 0;
 }
 

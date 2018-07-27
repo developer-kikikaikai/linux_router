@@ -37,13 +37,24 @@ void LANManager::add_devices(void) {
 		_directors.push_back(director);
 		device_init.conf_handle = itr->second;
 		device_init.class_instance = (LANDeviceInterface)director->lower_layer_interface;
+
+		/*up interface*/
 		lower_layer_director_construct(director, &device_init, NULL);
+
+		/*add device*/
+		_ipmanager->add_if(device_init.class_instance->getname(device_init.class_instance));
 	}
 }
 
 void LANManager::delete_devices(void ){
 	std::cout << "LANManager::delete_device" << std::endl;
+	LANDeviceInterface class_instance;
 	for(auto itr = _directors.begin(); itr != _directors.end(); ++itr) {
+		
+		/*del device*/
+		class_instance = (LANDeviceInterface) (*itr)->lower_layer_interface;
+		_ipmanager->del_if(class_instance->getname(class_instance));
+		/*down interface*/
 		lower_layer_director_free(*itr);
 	}
 

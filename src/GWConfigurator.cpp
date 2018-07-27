@@ -19,6 +19,9 @@ int GWConfigurator::set_ip(const char *ip, const char * netmask) {
 
 	/*setup bridge LAN interface*/
 	_add_bridge(ip, netmask);
+
+	/*set masquerage*/
+	_set_nat();
 	return 0;
 }
 
@@ -29,6 +32,7 @@ int GWConfigurator::unset_ip() {
 }
 
 void GWConfigurator::add_device(const char *name) {
+	_clear_ifip(name);
 	const char *args[] = {"brctl", "addif", _bridgeif, name, NULL};
 	_call_cmd(args);
 	
@@ -68,6 +72,16 @@ void GWConfigurator::_add_bridge(const char *ip, const char * netmask) {
 	_ifr_setaddr(ip, fd, &ifr, SIOCSIFNETMASK);
 
 	close(fd);
+}
+
+void GWConfigurator::_set_nat() {
+	/*set masquerade*/
+	const char *args[] = {"iptables", "-t", "nat", "-A", "POSTROUTING", "-o", _gwif, "-j", "MASQUERADE", NULL};
+	_call_cmd(args);
+
+	/*set ipforward*/
+	const char *sysctl_args[] ={"systemctl", "-w", "net.ipv4.ip_forward=1", NULL};
+	_call_cmd(sysctl_args);
 }
 
 void GWConfigurator::_del_bridge() {
@@ -136,6 +150,18 @@ void GWConfigurator::_get_gw_ip() {
 	close(fd);
 
 	snprintf(_gwip, sizeof(_gwip), "%s", inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr));
+}
+
+void GWConfigurator::_clear_ifip(const char * name) {
+	int fd;
+	struct ifreq ifr;
+	fd = _get_ifsock();
+	if(fd<0) return;
+
+	/*set ip address 0*/
+	_ifr_ip(&ifr);
+	_ifr_setaddr("0.0.0.0", fd, &ifr, SIOCSIFADDR);
+	close(fd);
 }
 
 void GWConfigurator::_call_cmd(const char ** in_cmd) {

@@ -14,12 +14,14 @@ private:
 
 	/*for up bridge*/
 	void _add_bridge(const char *ip, const char * netmask);
+	void _set_nat();
 	void _del_bridge();
 
 	/*for set_ip*/
 	void _get_gw_if();
 	int _is_gw_if();
 	void _get_gw_ip();
+	void _clear_ifip(const char * name);
 
 	/*common*/
 	void _call_cmd(const char ** cmd);
