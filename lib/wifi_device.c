@@ -1,14 +1,22 @@
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 #include <lower_layer_builder.h>
 #include "lan_interface.h"
 #include "device_json_parser.h"
 #include <signal.h>
 #include <spawn.h>
 #include <sys/types.h> 
+#include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <netinet/in.h>
 #include <sys/wait.h>
+#include <arpa/inet.h>
+#include <net/if.h>
 
 #define SUPPLICANT_CONF "/usr/local/share/wpa_supplicant.conf"
+#define CTRL_IF "/var/run/wpa_supplicant_lan"
+#define MAX_CNT (20)
 struct wifi_lan_device_t {
 LAN_DEVICE_INTERFACE
 	const char*  _ifname;
@@ -90,6 +98,7 @@ static void write_supplicant_conf(WifiLANDevice this) {
 	if(!fp) return;
 
 	char line[64]={0};
+	CWRITE_OPT("ctrl_interface=", CTRL_IF );
 	CWRITE_NON("network={")
 	CWRITE_OP2("    ssid=\"", this->_ssid, "\"");
 	CWRITE_NON("    mode=2");
@@ -101,6 +110,7 @@ static void write_supplicant_conf(WifiLANDevice this) {
 }
 
 int lan_if_up(void * initial_parameter) {
+	int ret = LL_BUILDER_FAILED;
 	LANDeviceInitParam param = (LANDeviceInitParam) initial_parameter;
 	WifiLANDevice instance = (WifiLANDevice)param->class_instance;
 
@@ -122,5 +132,56 @@ int lan_if_up(void * initial_parameter) {
 		NULL
 	};
 	posix_spawn( &instance->_pid, args[0], NULL, NULL, args, NULL );		
-	return LL_BUILDER_SUCCESS;
+
+	/*check statuc*/
+	char wpa_cli_cmd[100];
+	snprintf(wpa_cli_cmd, sizeof(wpa_cli_cmd), "wpa_cli -p %s  -i %s  status | grep wpa_state", CTRL_IF, instance->_ifname);
+	FILE *wpa_cli;
+	char result[64];
+	int retry_cnt=0;
+	while(retry_cnt<MAX_CNT) {
+		fprintf(stderr, "Check conpleted!!\n");
+		retry_cnt++;
+		memset(result, 0, sizeof(result));
+		wpa_cli = popen(wpa_cli_cmd, "r");
+		fgets(result, sizeof(result), wpa_cli);
+		pclose(wpa_cli);
+		fprintf(stderr, "err:%s", result);
+		if(strcmp(result, "wpa_state=COMPLETED\n") == 0 || strcmp(result, "wpa_state=DISCONNECTED\n") == 0) {
+			fprintf(stderr, "Completed!! check if u!!!!!p\n");
+			ret = LL_BUILDER_SUCCESS;
+			break;
+		}
+		sleep(1);
+	}
+	fprintf(stderr, "Completed!! check if up\n");
+
+	/*up if*/
+	if(ret == LL_BUILDER_SUCCESS) {
+		fprintf(stderr, "Check conpleted IF!!\n");
+		ret = LL_BUILDER_FAILED;
+		retry_cnt=0;
+		/*check if up*/
+		struct ifreq ifr;
+		int fd = socket(AF_INET, SOCK_DGRAM, 0);
+		strncpy(ifr.ifr_name, instance->_ifname, IFNAMSIZ-1);
+		while(retry_cnt<MAX_CNT) {
+			retry_cnt++;
+			ifr.ifr_flags = 0;
+			ioctl(fd, SIOCGIFFLAGS, &ifr);
+			if((ifr.ifr_flags & IFF_UP) && (ifr.ifr_flags & IFF_RUNNING)) {
+				fprintf(stderr, "conpleted IF!!\n");
+				ret = LL_BUILDER_SUCCESS;
+				system("ifconfig");
+				usleep(100000);
+				break;
+			}
+				fprintf(stderr, "unconpleted IF!!\n");
+			system("ifconfig");
+			sleep(1);
+		}
+		close(fd);
+	fprintf(stderr, "Completed!!\n");
+	}
+	return ret;
 }
