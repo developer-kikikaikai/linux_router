@@ -34,7 +34,6 @@ int GWConfigurator::unset_ip() {
 void GWConfigurator::add_device(const char *name) {
 	const char *args[] = {"brctl", "addif", _bridgeif, name, NULL};
 	_call_cmd(args);
-	
 }
 
 void GWConfigurator::del_device(const char *name) {

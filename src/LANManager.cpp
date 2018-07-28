@@ -3,10 +3,6 @@
 #include "lan_interface.h"
 #include <unistd.h>
 
-extern "C" {
-#include "dp_debug.h"
-}
-
 int LANManager::set_lan(void) {
 	std::cout << "LANManager::start" << std::endl;
 	return _ipmanager->set();

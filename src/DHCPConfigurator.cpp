@@ -89,7 +89,7 @@ void DHCPConfigurator::_write_dhcp_conf(const char * area_start, const char * ar
 
 DHCPConfigurator::DHCPConfigurator(const char * lanif) {
 	_lanif = lanif;
-	_dhcp_conf = "/usr/local/share/dhcpd.conf";
+	_dhcp_conf = "/usr/local/etc/dhcpd.conf";
 	_dhcpd_pid = 0;
 }
 
