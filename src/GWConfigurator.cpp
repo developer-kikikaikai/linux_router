@@ -74,11 +74,13 @@ void GWConfigurator::_add_bridge(const char *ip, const char * netmask) {
 
 void GWConfigurator::_set_nat() {
 	/*set masquerade*/
+	const char *args_clean[] = {"iptables", "-t", "nat", "-F", NULL};
+	_call_cmd(args_clean);
 	const char *args[] = {"iptables", "-t", "nat", "-A", "POSTROUTING", "-o", _gwif, "-j", "MASQUERADE", NULL};
 	_call_cmd(args);
 
 	/*set ipforward*/
-	const char *sysctl_args[] ={"systemctl", "-w", "net.ipv4.ip_forward=1", NULL};
+	const char *sysctl_args[] ={"sysctl", "-w", "net.ipv4.ip_forward=1", NULL};
 	_call_cmd(sysctl_args);
 }
 
