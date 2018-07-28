@@ -11,7 +11,9 @@ BROADCAST_WAN=`ifconfig ${WANIF} | grep broadcast | awk -F" " '{print $6}'`
 BROADCAST_LAN=`ifconfig ${LANIF} | grep broadcast | awk -F" " '{print $6}'`
 
 #reset firewall
-iptables -F
+iptables -F INPUT
+iptables -F OUTPUT
+iptables -F FORWARD
 
 #set base
 iptables -P INPUT DROP
@@ -85,7 +87,7 @@ sysctl -w net.ipv4.conf.${WANIF}.accept_source_route=0 > /dev/null
 sysctl -w net.ipv4.tcp_timestamps=1 > /dev/null
 
 #Create Blacklist
-${COUNTRY_BLACKLIST}
+#${COUNTRY_BLACKLIST}
 iptables -A INPUT -j BLACKLIST
 
 ##############################
