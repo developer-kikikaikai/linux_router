@@ -1,12 +1,13 @@
 #!/bin/bash
 COUNTRY=/root/script/countryip.sh
-IPTABLES=/sbin/iptables
+#パスを通す
+PATH=/bin:/sbin:/usr/bin:/usr/sbin
 
 #Create Whitelist
-$IPTABLES -N WHITELIST > /dev/nul 2>&1
-$IPTABLES -F WHITELIST
+iptables -N WHITELIST > /dev/nul 2>&1
+iptables -F WHITELIST
 WHITE_LIST=`$COUNTRY -a`
 for address in $WHITE_LIST
 do
-	$IPTABLES -A WHITELIST -s $address -j ACCEPT
+	iptables -A WHITELIST -s $address -j ACCEPT
 done

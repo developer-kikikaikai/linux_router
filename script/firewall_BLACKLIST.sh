@@ -1,12 +1,13 @@
 #!/bin/bash
 COUNTRY=/root/script/countryip.sh
-IPTABLES=/sbin/iptables
+#パスを通す
+PATH=/bin:/sbin:/usr/bin:/usr/sbin
 
 #Create Blacklist
-$IPTABLES -N BLACKLIST > /dev/nul 2>&1
-$IPTABLES -F BLACKLIST
+iptables -N BLACKLIST > /dev/nul 2>&1
+iptables -F BLACKLIST
 BLACKLIST=`$COUNTRY -r`
 for address in ${BLACKLIST}
 do
-	$IPTABLES -A BLACKLIST -s $address -j DROP
+	iptables -A BLACKLIST -s $address -j DROP
 done
