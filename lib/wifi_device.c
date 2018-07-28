@@ -128,7 +128,7 @@ static int is_wifi_ap_running(WifiLANDevice instance) {
 		wpa_cli = popen(wpa_cli_cmd, "r");
 		fgets(result, sizeof(result), wpa_cli);
 		pclose(wpa_cli);
-		if(strcmp(result, "wpa_state=COMPLETED\n") == 0) {
+		if(strcmp(result, "wpa_state=COMPLETED\n") == 0 || strcmp(result, "wpa_state=DISCONNECTED\n") == 0) {
 			printf("AP start Completed!!\n");
 			return 1;
 		}
