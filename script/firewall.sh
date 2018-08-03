@@ -1,5 +1,11 @@
 #!/bin/bash
+#usge: ./firewall.sh wanif lanif
 ##COMMON SETTING
+if [ $# != 2 ]; then
+	echo "Usage: $0 <wanif> <lanif>"
+	exit 1
+fi
+
 COUNTRY_BLACKLIST=/root/script/firewall_BLACKLIST.sh
 PATH=/bin:/sbin:/usr/bin:/usr/sbin
 
@@ -50,44 +56,74 @@ iptables -A INPUT -i $WANIF -s ${LOCAL_IP}/${LOCAL_AREA} -j DROP
 #ping attack (Large
 PING_MAX=85
 iptables -N PING_ATTACK > /dev/nul 2>&1
+iptables -F PING_ATTACK
 iptables -A PING_ATTACK -m length --length :${PING_MAX} -j ACCEPT
 #if you want to save log
-#iptables -A PING_ATTACK -j LOG --log-prefix "[IPTABLES PINGATTACK] : " --log-level=debug
+iptables -A PING_ATTACK -j LOG --log-prefix "ping_attack : "
 iptables -A PING_ATTACK -j DROP
 #ping attack (length
 iptables -A PING_ATTACK -p icmp --icmp-type echo-request -m length --length :${PING_MAX} -m limit --limit 1/s --limit-burst 4 -j ACCEPT
 #Add PING_ATTACK
 iptables -A INPUT -p icmp --icmp-type echo-request -j PING_ATTACK
 
+##############################
 #Smurf attack
 iptables -A INPUT -d 255.255.255.255 -j DROP
 iptables -A INPUT -d 224.0.0.1 -j DROP
 iptables -A INPUT -d ${BROADCAST_WAN} -j DROP
 iptables -A INPUT -d ${BROADCAST_LAN} -j DROP
 
+##############################
 #Smurf forward
 sysctl -w net.ipv4.icmp_echo_ignore_broadcasts=1 > /dev/null
 
+##############################
 #SYN cookies
 sysctl -w net.ipv4.tcp_syncookies=1 > /dev/null
 
+##############################
 #reject Auth/IDENT
 iptables -A INPUT -p tcp --dport 113 -j REJECT --reject-with tcp-reset
 
+##############################
 #rp_filte
 sysctl -w net.ipv4.conf.${WANIF}.rp_filter=1 > /dev/null
 
+##############################
 #ICMP redirect 
 sysctl -w net.ipv4.conf.${WANIF}.accept_redirects=0 > /dev/null
 
+##############################
 #Soruce route
 sysctl -w net.ipv4.conf.${WANIF}.accept_source_route=0 > /dev/null
 
+##############################
 #Disable tcp timestamp
 sysctl -w net.ipv4.tcp_timestamps=1 > /dev/null
 
+###########################################################
+#Stealth Scan
+iptables -N STEALTH_SCAN > /dev/nul 2>&1
+iptables -F STEALTH_SCAN
+iptables -A STEALTH_SCAN -j LOG --log-prefix "stealth_scan_attack: "
+iptables -A STEALTH_SCAN -j DROP
+
+#janp packet stealth scan to STEALTH_SCAN
+iptables -A INPUT -p tcp --tcp-flags SYN,ACK SYN,ACK -m state --state NEW -j STEALTH_SCAN
+iptables -A INPUT -p tcp --tcp-flags ALL NONE -j STEALTH_SCAN
+
+iptables -A INPUT -p tcp --tcp-flags SYN,FIN SYN,FIN         -j STEALTH_SCAN
+iptables -A INPUT -p tcp --tcp-flags SYN,RST SYN,RST         -j STEALTH_SCAN
+iptables -A INPUT -p tcp --tcp-flags ALL SYN,RST,ACK,FIN,URG -j STEALTH_SCAN
+
+iptables -A INPUT -p tcp --tcp-flags FIN,RST FIN,RST -j STEALTH_SCAN
+iptables -A INPUT -p tcp --tcp-flags ACK,FIN FIN     -j STEALTH_SCAN
+iptables -A INPUT -p tcp --tcp-flags ACK,PSH PSH     -j STEALTH_SCAN
+iptables -A INPUT -p tcp --tcp-flags ACK,URG URG     -j STEALTH_SCAN
+
 #Create Blacklist
 #${COUNTRY_BLACKLIST}
+iptables -A BLACKLIST -j LOG --log-prefix "blacklist_access: "
 iptables -A INPUT -j BLACKLIST
 
 ##############################
