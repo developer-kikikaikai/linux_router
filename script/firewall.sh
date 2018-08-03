@@ -78,7 +78,7 @@ iptables -A INPUT -d ${BROADCAST_LAN} -j DROP
 sysctl -w net.ipv4.icmp_echo_ignore_broadcasts=1 > /dev/null
 
 ##############################
-#SYN cookies
+#SYN Flood Attack
 sysctl -w net.ipv4.tcp_syncookies=1 > /dev/null
 
 ##############################
