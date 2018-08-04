@@ -11,19 +11,6 @@
 #include <signal.h>
 #include "DHCPConfigurator.hpp"
 
-void DHCPConfigurator::_add_conf(std::string &srcstr, const char * key, const char * val, const char * last) {
-	srcstr+=key;
-	srcstr+=" ";
-	srcstr+=val;
-	srcstr+=" ";
-	srcstr+=last;
-}
-void DHCPConfigurator::_add_conf_option(std::string &srcstr, const char * key, const char *val1, const char * val2) {
-	srcstr += "  ";
-	_add_conf(srcstr, key, val1, val2);
-	srcstr += ";\n";
-}
-
 const char * DHCPConfigurator::_get_subnet(const char *gw, const char *netmask) {
 
 	/*get gw and netmask bytearray*/
@@ -39,62 +26,9 @@ const char * DHCPConfigurator::_get_subnet(const char *gw, const char *netmask) 
 	return inet_ntoa(sin_addr);
 }
 
-void DHCPConfigurator::_start_dhcpd(const char * interface) {
-	int pid = fork();
-	/*child, call dhcpd*/
-	if(pid == 0) {
-		/*start dns first*/
-		std::string cmd;
-		cmd="dnsmasq";
-		FILE *fp = popen(cmd.c_str(), "r");
-		pclose(fp);
-
-		cmd = "/usr/sbin/dhcpd -f -cf ";
-		cmd += _dhcp_conf;
-		cmd += " -user dhcpd -group dhcpd --no-pid ";
-		//cmd += " -user dhcpd -group dhcpd --no-pid -d";//if you want to show debug
-		cmd += interface;
-
-		/*call dhcpd*/
-		std::cout << "DHCP start, cmd="  << cmd << std::endl;
-		fp = popen(cmd.c_str(), "r");
-		pclose(fp);
-		std::cout << "DHCP stop"  << std::endl;
-	} else {
-		_dhcpd_pid = pid;
-	}
-}
-
-void DHCPConfigurator::_write_dhcp_conf(const char * area_start, const char * area_end, const char *gw, const char *netmask, const char * leasetime) {
-	std::string dhcp_conf;
-	_add_conf(dhcp_conf, "default-lease-time", leasetime, ";\n");
-	_add_conf(dhcp_conf, "max-lease-time", leasetime, ";\n");
-	dhcp_conf += "log-facility local7;\n";//fix
-	_add_conf(dhcp_conf, "subnet", _get_subnet(gw, netmask) , " ");
-	_add_conf(dhcp_conf, "netmask", netmask, " {\n");
-	//option start
-	_add_conf_option(dhcp_conf, "range", area_start, area_end);
-	_add_conf_option(dhcp_conf, "option", "subnet-mask", netmask);
-	_add_conf_option(dhcp_conf, "option", "routers", gw);
-	_add_conf_option(dhcp_conf, "option", "domain-name-servers", gw);
-	dhcp_conf += "}";
-	std::cout << dhcp_conf << std::endl;
-
-	/*write file*/
-	std::ofstream fout;
-	fout.open(_dhcp_conf);
-	fout << dhcp_conf;
-	fout.close();
-}
-
 DHCPConfigurator::DHCPConfigurator(const char * lanif) {
 	_lanif = lanif;
-	_dhcp_conf = "/usr/local/etc/dhcpd.conf";
 	_dhcpd_pid = 0;
-}
-
-DHCPConfigurator::~DHCPConfigurator() {
-	stop();
 }
 
 int DHCPConfigurator::start(const char * area_start, const char * area_end, const char *gw, const char *netmask, const char * leasetime) {
@@ -102,7 +36,7 @@ int DHCPConfigurator::start(const char * area_start, const char * area_end, cons
 
 	_write_dhcp_conf(area_start, area_end, gw, netmask, leasetime);;
 
-	_start_dhcpd(_lanif);
+	_dhcpd_pid = _start_dhcpd(_lanif);
         return 0;
 }
 

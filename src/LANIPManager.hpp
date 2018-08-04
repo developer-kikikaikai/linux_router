@@ -3,12 +3,12 @@
 
 #include <iostream>
 #include <jansson.h>
-#include "DHCPConfigurator.hpp"
+#include "DHCPConfiguratorImple.hpp"
 #include "GWConfigurator.hpp"
 
 class LANIPManager {
 private:
-	DHCPConfigurator * _dhcp;
+	DHCPConfiguratorImple * _dhcp;
 	GWConfigurator * _gw;
 	const json_t * _lan_info;
 

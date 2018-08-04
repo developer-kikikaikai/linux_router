@@ -3,7 +3,7 @@
 LANIPManager::LANIPManager(const json_t * lan_info) {
 	_lan_info = lan_info;
 	const char * lanif = getlanif();
-	_dhcp = new DHCPConfigurator(lanif);
+	_dhcp = new DHCPConfiguratorImple(lanif);
 	_gw = new GWConfigurator(lanif);
 }
 
