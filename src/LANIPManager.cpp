@@ -26,6 +26,7 @@ int LANIPManager::_set_dhcp(void) {
 
 int LANIPManager::set(void) {
 	std::cout << "LANIPManager::start" << std::endl;
+
 	/* Start GW*/
 	_set_gw();
 

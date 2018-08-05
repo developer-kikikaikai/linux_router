@@ -12,7 +12,8 @@ int DHCPConfiguratorImple::_start_dhcpd(const char * interface) {
 	if(pid == 0) {
 		/*start dns first*/
 		std::string cmd;
-		cmd="dnsmasq";
+		cmd="dnsmasq -i ";
+		cmd+=interface;
 		FILE *fp = popen(cmd.c_str(), "r");
 		pclose(fp);
 
@@ -36,15 +37,15 @@ int DHCPConfiguratorImple::_start_dhcpd(const char * interface) {
 void DHCPConfiguratorImple::_write_dhcp_conf(const char * area_start, const char * area_end, const char *gw, const char *netmask, const char * leasetime) {
 	std::string dhcp_conf;
 	const char * sepa=" ", *end=";\n", *opt="  ";
-	_add_conf(dhcp_conf, sepa, {"default-lease-time", leasetime, end});
-	_add_conf(dhcp_conf, sepa, {"max-lease-time", leasetime, end});
+	_add_conf(dhcp_conf, sepa, {"default-lease-time", leasetime}, end);
+	_add_conf(dhcp_conf, sepa, {"max-lease-time", leasetime}, end);
 	dhcp_conf += "log-facility local7;\n";//fix
-	_add_conf(dhcp_conf, " ", {"subnet", _get_subnet(gw, netmask) , "netmask", netmask, " {\n"});
+	_add_conf(dhcp_conf, " ", {"subnet", _get_subnet(gw, netmask) , "netmask", netmask}, " {\n");
 	//option start
-	_add_conf(dhcp_conf, sepa, {opt, "range", area_start, area_end, end});
-	_add_conf(dhcp_conf, sepa, {opt, "option", "subnet-mask", netmask, end});
-	_add_conf(dhcp_conf, sepa, {opt, "option", "routers", gw, ";\n"});
-	_add_conf(dhcp_conf, sepa, {opt, "option", "domain-name-servers", gw, end});
+	_add_conf(dhcp_conf, sepa, {opt, "range", area_start, area_end}, end);
+	_add_conf(dhcp_conf, sepa, {opt, "option", "subnet-mask", netmask}, end);
+	_add_conf(dhcp_conf, sepa, {opt, "option", "routers", gw}, ";\n");
+	_add_conf(dhcp_conf, sepa, {opt, "option", "domain-name-servers", gw}, end);
 	dhcp_conf += "}";
 	std::cout << dhcp_conf << std::endl;
 
