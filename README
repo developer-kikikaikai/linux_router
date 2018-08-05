@@ -1,0 +1,20 @@
+##build
+
+1. install package autotools(autoconf, gcc), libtool, cmake, gcc-c++ and jansson
+
+2. Download design_pattern_for_c package from https://github.com/developer-kikikaikai/design_pattern_for_c.git, and install
+  ./configure --disable-threadpool-libevent --disable-threadpool-libev && make && make install)
+3. Compile this package
+   cmake .
+   make
+
+##run
+
+1. install bridge-utils, net-tools, iproute, iptables, dnsmasq, wpa_supplicant, unzip, (isc-dhcp-server if you want to use dhcpd)
+2. in linux_router/src, run ./lan_router ../conf/setting.conf
+
+##firewall
+1. copy all script into /root/script
+2. run /root/script/countryip.sh
+3. run /root/script/firewall_BLACKLIST.sh
+4. run /root/script/firewall.sh
