@@ -4,6 +4,10 @@ set(CMAKE_VERBOSE_MAKEFILE 1)
 
 link_directories(${DPPATH})
 add_definitions("-std=c++11")
+
+#modify path of GWConfigurator.cpp conf to PREFIX
+add_custom_command(OUTPUT  LANManager.cpp COMMAND  "sed" "-e" "\"s@PREFIX@${CMAKE_INSTALL_PREFIX}@g\"" "LANManager_base.cpp" ">" "LANManager.cpp")
+
 #for dhcpd
 set(SRCS_BASE DHCPConfigurator.cpp GWConfigurator.cpp LANIPManager.cpp LANManager.cpp main.cpp JsonParser.cpp)
 set(SRCS_DHCPD ${SRCS_BASE} DHCPConfigurator_dhcpd.cpp)
