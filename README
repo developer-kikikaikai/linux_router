@@ -20,7 +20,8 @@ This is a LAN network router on linux.
 
 1. Install bridge-utils, net-tools, iproute, iptables, dnsmasq, wpa_supplicant, unzip, (isc-dhcp-server if you want to use dhcpd)
 2. Modify /usr/local/conf/setting.conf as your environment.
-3. run lan_router
+3. export /usr/local/lib path like "export LD_LIBRARY_PATH=/usr/local/lib
+4. run lan_router
    /usr/local/bin/lan_router /usr/local/conf/setting.conf after modification setting.conf 
 
 ## uninstall
