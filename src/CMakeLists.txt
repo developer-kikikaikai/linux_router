@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}/lib")
 set(CMAKE_VERBOSE_MAKEFILE 1)
 
-link_directories(/usr/local/lib)
+link_directories(${DPPATH})
 add_definitions("-std=c++11")
 #for dhcpd
 set(SRCS_BASE DHCPConfigurator.cpp GWConfigurator.cpp LANIPManager.cpp LANManager.cpp main.cpp JsonParser.cpp)
