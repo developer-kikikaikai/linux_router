@@ -1,20 +1,34 @@
-##build
+## What is this?
+
+This is a LAN network router on linux.
+
+- Create LAN network with ethernet, wifi and any other devices if you implement plugin
+- Set firewall setting (Optional)
+
+## build and install
 
 1. install package autotools(autoconf, gcc), libtool, cmake, gcc-c++ and jansson
 
 2. Download design_pattern_for_c package from https://github.com/developer-kikikaikai/design_pattern_for_c.git, and install
   ./configure --disable-threadpool-libevent --disable-threadpool-libev && make && make install)
-3. Compile this package
+3. Compile and install this package
    cmake .
    make
+   make install
 
-##run
+## run
 
-1. install bridge-utils, net-tools, iproute, iptables, dnsmasq, wpa_supplicant, unzip, (isc-dhcp-server if you want to use dhcpd)
-2. in linux_router/src, run ./lan_router ../conf/setting.conf
+1. Install bridge-utils, net-tools, iproute, iptables, dnsmasq, wpa_supplicant, unzip, (isc-dhcp-server if you want to use dhcpd)
+2. Modify /usr/local/conf/setting.conf as your environment.
+3. run lan_router
+   /usr/local/bin/lan_router /usr/local/conf/setting.conf after modification setting.conf 
 
-##firewall
-1. copy all script into /root/script
-2. run /root/script/countryip.sh
-3. run /root/script/firewall_BLACKLIST.sh
-4. run /root/script/firewall.sh
+## uninstall
+
+call ./uninstall
+
+## firewall
+
+1. run /root/script/countryip.sh
+2. run /root/script/firewall_BLACKLIST.sh
+3. run /root/script/firewall.sh
