@@ -68,10 +68,10 @@ iptables -A INPUT -p icmp --icmp-type echo-request -j PING_ATTACK
 
 ##############################
 #Smurf attack
-iptables -A INPUT -d 255.255.255.255 -j DROP
-iptables -A INPUT -d 224.0.0.1 -j DROP
-iptables -A INPUT -d ${BROADCAST_WAN} -j DROP
-iptables -A INPUT -d ${BROADCAST_LAN} -j DROP
+iptables -A INPUT -i ${WANIF} -d 255.255.255.255 -j DROP
+iptables -A INPUT -i ${WANIF} -d 224.0.0.1 -j DROP
+iptables -A INPUT -i ${WANIF} -d ${BROADCAST_WAN} -j DROP
+iptables -A INPUT -i ${WANIF} -d ${BROADCAST_LAN} -j DROP
 
 ##############################
 #Smurf forward
@@ -155,6 +155,10 @@ accept_port_udp() {
 
 PORT_UDP=
 PORT_TCP=
+
+#DHCP
+PORT_UDP+="67 68 "
+
 #DNS
 PORT_UDP+="53 "
 PORT_TCP+="53 "
