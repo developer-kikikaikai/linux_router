@@ -25,7 +25,7 @@ void LANManager::add_devices(void) {
 			std::cout << "    " <<  key << ":" << json_string_value(value) << std::endl;
 		}
 		plugin_name = (char *)itr->first.c_str();
-		director = lower_layer_director_new(plugin_name , (char*)"PREFIX/conf/lan_interface.conf");
+		director = lower_layer_director_new(plugin_name , (char*)CONF_PATH"lan_interface.conf");
 		if(director == NULL) {
 			fprintf(stderr, "Failed to load %s\n", plugin_name);
 			exit(1);
