@@ -26,6 +26,18 @@ const char * DHCPConfigurator::_get_subnet(const char *gw, const char *netmask) 
 	return inet_ntoa(sin_addr);
 }
 
+void DHCPConfigurator::_add_conf(std::string &srcstr, char const* separater, std::initializer_list<char const*> options) {
+	int is_first=1;
+	for (char const*opt : options) {
+		if(!is_first) {
+			srcstr += separater;
+		} else {
+			is_first = 0;
+		}
+		srcstr += opt;
+	}
+}
+
 DHCPConfigurator::DHCPConfigurator(const char * lanif) {
 	_lanif = lanif;
 	_dhcpd_pid = 0;
