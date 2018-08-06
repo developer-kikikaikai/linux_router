@@ -12,10 +12,12 @@ This is a LAN network router on linux.
 2. Download design_pattern_for_c package from https://github.com/developer-kikikaikai/design_pattern_for_c.git, and install
   ./configure --disable-threadpool-libevent --disable-threadpool-libev && make && make install)
 3. Compile and install this package
-   cmake .
+   cd build && cmake ../
    make
    make install
 
+install path: /usr/local/bin,lib,conf and /root/script
+If you want to change /usr/local prefix, please set  -DCMAKE_INSTALL_PREFIX=XXX with cmake option
 ## run
 
 1. Install bridge-utils, net-tools, iproute, iptables, dnsmasq, wpa_supplicant, unzip, (isc-dhcp-server if you want to use dhcpd)
