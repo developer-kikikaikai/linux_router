@@ -1,2 +1,2 @@
 #!/bin/sh
-cat install_manifest.txt | xargs rm 
+cat build/install_manifest.txt | xargs rm -f
