@@ -11,9 +11,15 @@ This is a LAN network router on linux.
 
 2. Download design_pattern_for_c package from https://github.com/developer-kikikaikai/design_pattern_for_c.git, and install
   ./configure --disable-threadpool-libevent --disable-threadpool-libev && make && make install)
-3. Compile and install this package
+3. Build this package
+   ./make.sh
+   or
    cd build && cmake ../
-   make
+   cmake --build build
+
+4. Install this package
+   ./install.sh
+   or
    make install
 
 install path: /usr/local/bin,lib,conf and /root/script
